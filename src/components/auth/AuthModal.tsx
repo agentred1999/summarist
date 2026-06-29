@@ -7,7 +7,8 @@ import { setAuthModal } from '@/store/slices/uiSlice';
 import { 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword,
-  signInWithPopup
+  signInWithPopup,
+  GoogleAuthProvider
 } from 'firebase/auth';
 import { auth, googleProvider } from '@/lib/firebase';
 import { setUser, setError } from '@/store/slices/authSlice';
@@ -54,6 +55,7 @@ export default function AuthModal() {
       dispatch(setAuthModal(false));
       router.push('/for-you');
     } catch (error: any) {
+      console.error('Auth error:', error);
       let errorMessage = 'An error occurred';
       if (error.code === 'auth/invalid-email') errorMessage = 'Invalid email address';
       else if (error.code === 'auth/weak-password') errorMessage = 'Password should be at least 6 characters';
@@ -69,9 +71,13 @@ export default function AuthModal() {
   const handleGoogleLogin = async () => {
     setLoading(true);
     dispatch(setError(null));
+    
     try {
+      console.log('Starting Google login...');
       const result = await signInWithPopup(auth, googleProvider);
+      console.log('Google login result:', result);
       const user = result.user;
+      
       dispatch(setUser({
         uid: user.uid,
         email: user.email,
@@ -80,10 +86,28 @@ export default function AuthModal() {
         savedBooks: [],
         finishedBooks: [],
       }));
+      
       dispatch(setAuthModal(false));
       router.push('/for-you');
     } catch (error: any) {
-      dispatch(setError('Google sign-in failed. Please try again.'));
+      console.error('Google login error FULL:', error);
+      console.error('Error code:', error.code);
+      console.error('Error message:', error.message);
+      
+      // Handle specific error codes
+      if (error.code === 'auth/popup-closed-by-user') {
+        dispatch(setError('Sign-in cancelled. Please try again.'));
+      } else if (error.code === 'auth/popup-blocked') {
+        dispatch(setError('Popup blocked. Please allow popups for this site.'));
+      } else if (error.code === 'auth/unauthorized-domain') {
+        dispatch(setError('Domain not authorized. Please contact support.'));
+      } else if (error.code === 'auth/network-request-failed') {
+        dispatch(setError('Network error. Please check your connection.'));
+      } else if (error.code === 'auth/internal-error') {
+        dispatch(setError('Internal error. Please try again.'));
+      } else {
+        dispatch(setError(`Google sign-in failed: ${error.message || 'Please try again.'}`));
+      }
     } finally {
       setLoading(false);
     }
@@ -96,7 +120,8 @@ export default function AuthModal() {
       await signInWithEmailAndPassword(auth, 'guest@gmail.com', 'guest123');
       dispatch(setAuthModal(false));
       router.push('/for-you');
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Guest login error:', error);
       dispatch(setError('Guest login failed. Please try again.'));
     } finally {
       setLoading(false);
@@ -110,7 +135,7 @@ export default function AuthModal() {
       position: 'fixed',
       inset: 0,
       backgroundColor: 'rgba(0,0,0,0.5)',
-      zIndex: 9999,
+      zIndex: 99999,
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',

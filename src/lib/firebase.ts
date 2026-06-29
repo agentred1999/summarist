@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, setPersistence, browserLocalPersistence } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
@@ -14,16 +14,18 @@ const firebaseConfig = {
 // Initialize Firebase only once
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
+
+// Set persistence to LOCAL
+setPersistence(auth, browserLocalPersistence).catch((error) => {
+  console.error('Auth persistence error:', error);
+});
+
 const db = getFirestore(app);
+
+// Google Provider
 const googleProvider = new GoogleAuthProvider();
-
-// Add scopes
-googleProvider.addScope('profile');
-googleProvider.addScope('email');
-
-// Set custom parameters for better UX
 googleProvider.setCustomParameters({
   prompt: 'select_account'
 });
 
-export { app, auth, db, googleProvider };
+export { app, auth, db, googleProvider, signInWithPopup, signInWithRedirect };
