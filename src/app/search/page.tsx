@@ -58,7 +58,7 @@ export default function SearchPage() {
               <p style={{ fontSize: '16px', fontWeight: 600, color: '#032b41', marginBottom: '4px' }}>{book.title}</p>
               <p style={{ fontSize: '14px', color: '#6b757b', marginBottom: '8px' }}>{book.author}</p>
               <div style={{ display: 'flex', gap: '12px', fontSize: '13px', color: '#6b757b' }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><FiClock size={12} /> {book.duration ?? '4:52'}</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><FiClock size={12} /> 4:52</span>
                 <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><FiStar size={12} /> {book?.averageRating?.toFixed(1) ?? 'N/A'}</span>
                 {book.subscriptionRequired && <span style={{ backgroundColor: '#032b41', color: '#fff', fontSize: '11px', padding: '2px 8px', borderRadius: '4px' }}>Premium</span>}
               </div>
