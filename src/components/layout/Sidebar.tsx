@@ -8,7 +8,7 @@ import { toggleAuthModal } from '@/store/slices/uiSlice';
 import { logout } from '@/store/slices/authSlice';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
-import { AiOutlineHome, AiOutlineContainer, AiOutlineBulb, AiOutlineSearch, AiOutlineSetting, AiOutlineQuestionCircle, AiOutlineLogin, AiOutlineLogout } from 'react-icons/ai';
+import { AiOutlineHome, AiOutlineContainer, AiOutlineBulb, AiOutlineSearch, AiOutlineSetting, AiOutlineQuestionCircle, AiOutlineLogin, AiOutlineLogout, AiOutlineMenu, AiOutlineClose } from 'react-icons/ai';
 import Image from 'next/image';
 import { useState, useEffect, useRef } from 'react';
 
@@ -34,6 +34,7 @@ export default function Sidebar() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchBook[]>([]);
   const [searching, setSearching] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -60,6 +61,11 @@ export default function Sidebar() {
     return () => document.removeEventListener('mousedown', handleClick);
   }, [searchOpen]);
 
+  // Close mobile sidebar on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
   const handleAuthAction = async () => {
     if (user) {
       await signOut(auth);
@@ -83,80 +89,132 @@ export default function Sidebar() {
     transition: 'all 0.2s',
   });
 
+  const sidebarContent = (
+    <div style={{
+      width: '228px', minHeight: '100vh', backgroundColor: '#fff',
+      borderRight: '1px solid #e8e8e8', display: 'flex',
+      flexDirection: 'column', justifyContent: 'space-between',
+      flexShrink: 0, zIndex: 999
+    }}>
+      <div>
+        <div style={{ padding: '24px 28px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Image src="/assets/logo.png" alt="logo" width={160} height={40} />
+          {/* Close button on mobile */}
+          <button
+            onClick={() => setMobileOpen(false)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'none' }}
+            className="mobile-close-btn"
+          >
+            <AiOutlineClose size={24} color="#032b41" />
+          </button>
+        </div>
+        <nav>
+          <Link href="/for-you" style={linkStyle('/for-you', pathname === '/for-you')}>
+            <AiOutlineHome style={{ fontSize: '24px' }} />
+            <span>For You</span>
+          </Link>
+          <Link href="/library" style={linkStyle('/library', pathname === '/library')}>
+            <AiOutlineContainer style={{ fontSize: '24px' }} />
+            <span>Library</span>
+          </Link>
+          <div style={linkStyle(null)} title="Coming soon">
+            <AiOutlineBulb style={{ fontSize: '24px' }} />
+            <span>Highlights</span>
+          </div>
+          <div
+            style={{ ...linkStyle(null, searchOpen), cursor: 'pointer' }}
+            onClick={() => setSearchOpen(true)}
+          >
+            <AiOutlineSearch style={{ fontSize: '24px' }} />
+            <span>Search</span>
+          </div>
+        </nav>
+      </div>
+
+      <div style={{ paddingBottom: '32px' }}>
+        {bottomItems.map(item => (
+          item.path ? (
+            <Link key={item.name} href={item.path} style={linkStyle(item.path, pathname === item.path)}>
+              <item.icon style={{ fontSize: '24px' }} />
+              <span>{item.name}</span>
+            </Link>
+          ) : (
+            <div key={item.name} style={linkStyle(null)} title="Coming soon">
+              <item.icon style={{ fontSize: '24px' }} />
+              <span>{item.name}</span>
+            </div>
+          )
+        ))}
+        <div onClick={handleAuthAction} style={{ ...linkStyle(null), cursor: 'pointer' }}>
+          {user ? <AiOutlineLogout style={{ fontSize: '24px' }} /> : <AiOutlineLogin style={{ fontSize: '24px' }} />}
+          <span>{user ? 'Logout' : 'Login'}</span>
+        </div>
+        {user && (
+          <div style={{ padding: '12px 28px', fontSize: '13px', color: '#6b757b', wordBreak: 'break-all' }}>
+            {user.email}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <>
-      {/* Search overlay */}
-      {searchOpen && (
-        <div style={{
-          position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.3)', zIndex: 998
-        }} />
+      {/* Mobile hamburger button */}
+      <button
+        onClick={() => setMobileOpen(true)}
+        style={{
+          position: 'fixed', top: '16px', left: '16px', zIndex: 1001,
+          background: '#fff', border: '1px solid #e8e8e8', borderRadius: '8px',
+          padding: '8px', cursor: 'pointer', display: 'none',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+        }}
+        className="hamburger-btn"
+      >
+        <AiOutlineMenu size={24} color="#032b41" />
+      </button>
+
+      {/* Desktop sidebar */}
+      <div className="desktop-sidebar" style={{ position: 'sticky', top: 0, alignSelf: 'flex-start' }}>
+        {sidebarContent}
+      </div>
+
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <div
+          onClick={() => setMobileOpen(false)}
+          style={{
+            position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.4)',
+            zIndex: 1000, display: 'none'
+          }}
+          className="mobile-overlay"
+        />
       )}
 
-      <div style={{
-        width: '228px', minHeight: '100vh', backgroundColor: '#fff',
-        borderRight: '1px solid #e8e8e8', display: 'flex',
-        flexDirection: 'column', justifyContent: 'space-between',
-        position: 'sticky', top: 0, flexShrink: 0, zIndex: 999
-      }}>
-        <div>
-          <div style={{ padding: '24px 28px 32px' }}>
-            <Image src="/assets/logo.png" alt="logo" width={160} height={40} />
-          </div>
-          <nav>
-            <Link href="/for-you" style={linkStyle('/for-you', pathname === '/for-you')}>
-              <AiOutlineHome style={{ fontSize: '24px' }} />
-              <span>For You</span>
-            </Link>
-            <Link href="/library" style={linkStyle('/library', pathname === '/library')}>
-              <AiOutlineContainer style={{ fontSize: '24px' }} />
-              <span>Library</span>
-            </Link>
-            <div style={linkStyle(null)} title="Coming soon">
-              <AiOutlineBulb style={{ fontSize: '24px' }} />
-              <span>Highlights</span>
-            </div>
-            <div
-              style={{ ...linkStyle(null, searchOpen), cursor: 'pointer' }}
-              onClick={() => setSearchOpen(true)}
-            >
-              <AiOutlineSearch style={{ fontSize: '24px' }} />
-              <span>Search</span>
-            </div>
-          </nav>
-        </div>
-
-        <div style={{ paddingBottom: '32px' }}>
-          {bottomItems.map(item => (
-            item.path ? (
-              <Link key={item.name} href={item.path} style={linkStyle(item.path, pathname === item.path)}>
-                <item.icon style={{ fontSize: '24px' }} />
-                <span>{item.name}</span>
-              </Link>
-            ) : (
-              <div key={item.name} style={linkStyle(null)} title="Coming soon">
-                <item.icon style={{ fontSize: '24px' }} />
-                <span>{item.name}</span>
-              </div>
-            )
-          ))}
-          <div onClick={handleAuthAction} style={{ ...linkStyle(null), cursor: 'pointer' }}>
-            {user ? <AiOutlineLogout style={{ fontSize: '24px' }} /> : <AiOutlineLogin style={{ fontSize: '24px' }} />}
-            <span>{user ? 'Logout' : 'Login'}</span>
-          </div>
-          {user && (
-            <div style={{ padding: '12px 28px', fontSize: '13px', color: '#6b757b' }}>
-              {user.email}
-            </div>
-          )}
-        </div>
+      {/* Mobile sidebar drawer */}
+      <div
+        className="mobile-sidebar"
+        style={{
+          position: 'fixed', top: 0, left: 0, zIndex: 1001,
+          transform: mobileOpen ? 'translateX(0)' : 'translateX(-100%)',
+          transition: 'transform 0.3s ease', display: 'none'
+        }}
+      >
+        {sidebarContent}
       </div>
+
+      {/* Search overlay */}
+      {searchOpen && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.3)', zIndex: 998 }} />
+      )}
 
       {/* Search panel */}
       {searchOpen && (
         <div ref={searchRef} style={{
           position: 'fixed', top: 0, left: '228px', right: 0,
           backgroundColor: '#fff', zIndex: 1000, padding: '24px 40px',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.1)', minHeight: '100vh'
+          boxShadow: '0 4px 12px rgba(0,0,0,0.1)', minHeight: '100vh',
+          overflowY: 'auto'
         }}>
           <div style={{ maxWidth: '600px', margin: '0 auto' }}>
             <div style={{ position: 'relative', marginBottom: '24px' }}>
@@ -179,7 +237,6 @@ export default function Sidebar() {
             </div>
 
             {searching && <div style={{ color: '#6b757b', textAlign: 'center' }}>Searching...</div>}
-
             {!searching && searchQuery && searchResults.length === 0 && (
               <div style={{ color: '#6b757b', textAlign: 'center' }}>No results found</div>
             )}
@@ -217,6 +274,15 @@ export default function Sidebar() {
           </div>
         </div>
       )}
+
+      <style>{`
+        @media (max-width: 768px) {
+          .hamburger-btn { display: block !important; }
+          .desktop-sidebar { display: none !important; }
+          .mobile-sidebar { display: block !important; }
+          .mobile-overlay { display: block !important; }
+        }
+      `}</style>
     </>
   );
 }
