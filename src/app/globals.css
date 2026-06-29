@@ -1,2 +1,2 @@
-/* This file is intentionally minimal to avoid conflicts with style.css */
-/* All styles are in style.css */
+/* Import only style.css */
+@import './style.css';
