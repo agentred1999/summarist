@@ -1,13 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
 import { setAuthModal } from '@/store/slices/uiSlice';
 import { 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword,
-  signInWithPopup
+  signInWithPopup,
+  onAuthStateChanged
 } from 'firebase/auth';
 import { auth, googleProvider } from '@/lib/firebase';
 import { setUser, setError } from '@/store/slices/authSlice';
@@ -24,6 +25,23 @@ export default function AuthModal() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Listen for auth state changes
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        dispatch(setUser({
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName || user.email?.split('@')[0] || 'User',
+          subscription: 'basic',
+          savedBooks: [],
+          finishedBooks: [],
+        }));
+      }
+    });
+    return () => unsubscribe();
+  }, [dispatch]);
 
   const handleClose = () => {
     dispatch(setAuthModal(false));
@@ -65,8 +83,6 @@ export default function AuthModal() {
         errorMessage = 'Wrong password';
       } else if (error.code === 'auth/email-already-in-use') {
         errorMessage = 'Email already in use';
-      } else if (error.code === 'auth/too-many-requests') {
-        errorMessage = 'Too many attempts. Please try again later.';
       }
       dispatch(setError(errorMessage));
     } finally {
@@ -81,33 +97,21 @@ export default function AuthModal() {
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
-      
-      const displayName = user.displayName || user.email?.split('@')[0] || 'User';
-      
       dispatch(setUser({
         uid: user.uid,
         email: user.email,
-        displayName: displayName,
+        displayName: user.displayName || user.email?.split('@')[0] || 'User',
         subscription: 'basic',
         savedBooks: [],
         finishedBooks: [],
       }));
-      
       dispatch(setAuthModal(false));
       router.push('/for-you');
     } catch (error: any) {
-      console.error('Google login error:', error);
-      
       if (error.code === 'auth/popup-closed-by-user') {
         dispatch(setError('Google sign-in was cancelled'));
-      } else if (error.code === 'auth/popup-blocked') {
-        dispatch(setError('Please allow popups for this site to sign in with Google'));
-      } else if (error.code === 'auth/network-request-failed') {
-        dispatch(setError('Network error. Please check your connection.'));
-      } else if (error.code === 'auth/unauthorized-domain') {
-        dispatch(setError('This domain is not authorized for Google sign-in.'));
       } else {
-        dispatch(setError(`Google sign-in failed. Please try again.`));
+        dispatch(setError('Google sign-in failed. Please try again.'));
       }
     } finally {
       setLoading(false);
@@ -121,8 +125,7 @@ export default function AuthModal() {
       await signInWithEmailAndPassword(auth, 'guest@gmail.com', 'guest123');
       dispatch(setAuthModal(false));
       router.push('/for-you');
-    } catch (error: any) {
-      console.error('Guest login error:', error);
+    } catch (error) {
       dispatch(setError('Guest login failed. Please try again.'));
     } finally {
       setLoading(false);
