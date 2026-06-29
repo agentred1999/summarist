@@ -8,24 +8,19 @@ import { toggleAuthModal } from '@/store/slices/uiSlice';
 import { logout } from '@/store/slices/authSlice';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
-import { 
-  FiHome, 
-  FiBook, 
-  FiStar, 
-  FiSearch, 
-  FiSettings, 
-  FiHelpCircle, 
-  FiLogIn, 
-  FiLogOut 
-} from 'react-icons/fi';
+import { AiOutlineHome, AiOutlineContainer, AiOutlineBulb, AiOutlineSearch, AiOutlineSetting, AiOutlineQuestionCircle, AiOutlineLogin, AiOutlineLogout } from 'react-icons/ai';
+import Image from 'next/image';
 
 const menuItems = [
-  { name: 'For You', path: '/for-you', icon: FiHome },
-  { name: 'Library', path: '/library', icon: FiBook },
-  { name: 'Highlights', path: '#', icon: FiStar, disabled: true },
-  { name: 'Search', path: '#', icon: FiSearch, disabled: true },
-  { name: 'Settings', path: '/settings', icon: FiSettings },
-  { name: 'Help & Support', path: '#', icon: FiHelpCircle, disabled: true },
+  { name: 'For You', path: '/for-you', icon: AiOutlineHome },
+  { name: 'Library', path: '/library', icon: AiOutlineContainer },
+  { name: 'Highlights', path: null, icon: AiOutlineBulb },
+  { name: 'Search', path: null, icon: AiOutlineSearch },
+];
+
+const bottomItems = [
+  { name: 'Settings', path: '/settings', icon: AiOutlineSetting },
+  { name: 'Help & Support', path: null, icon: AiOutlineQuestionCircle },
 ];
 
 export default function Sidebar() {
@@ -36,80 +31,75 @@ export default function Sidebar() {
 
   const handleAuthAction = async () => {
     if (user) {
-      try {
-        await signOut(auth);
-        dispatch(logout());
-        router.push('/');
-      } catch (error) {
-        console.error('Logout failed:', error);
-      }
+      await signOut(auth);
+      dispatch(logout());
+      router.push('/');
     } else {
       dispatch(toggleAuthModal());
     }
   };
 
-  // Hide sidebar on home and sales page
-  if (pathname === '/' || pathname === '/choose-plan') {
-    return null;
-  }
+  if (pathname === '/' || pathname === '/choose-plan') return null;
+
+  const linkStyle = (path: string | null) => ({
+    display: 'flex', alignItems: 'center', gap: '16px',
+    padding: '12px 28px', fontSize: '16px', fontWeight: 300,
+    color: pathname === path ? '#032b41' : '#6b757b',
+    backgroundColor: pathname === path ? '#f1f6f4' : 'transparent',
+    cursor: path ? 'pointer' : 'not-allowed',
+    textDecoration: 'none', borderLeft: pathname === path ? '4px solid #2bd97c' : '4px solid transparent',
+    transition: 'all 0.2s',
+  });
 
   return (
-    <div className="w-64 h-screen bg-white border-r border-gray-200 fixed left-0 top-0 overflow-y-auto">
-      <div className="p-4">
-        <div className="mb-8">
-          <Link href="/" className="text-2xl font-bold text-blue-600">
-            Summarist
-          </Link>
+    <div style={{
+      width: '228px', minHeight: '100vh', backgroundColor: '#fff',
+      borderRight: '1px solid #e8e8e8', display: 'flex',
+      flexDirection: 'column', justifyContent: 'space-between',
+      position: 'sticky', top: 0, flexShrink: 0
+    }}>
+      <div>
+        <div style={{ padding: '24px 28px 32px' }}>
+          <Image src="/assets/logo.png" alt="logo" width={160} height={40} />
         </div>
-
-        <nav className="space-y-2">
-          {menuItems.map((item) => (
-            <div key={item.name}>
-              {item.disabled ? (
-                <div className="flex items-center gap-3 px-4 py-2 text-gray-400 cursor-not-allowed">
-                  <item.icon className="w-5 h-5" />
-                  <span>{item.name}</span>
-                </div>
-              ) : (
-                <Link
-                  href={item.path}
-                  className={`flex items-center gap-3 px-4 py-2 rounded-lg transition ${
-                    pathname === item.path
-                      ? 'bg-blue-50 text-blue-600'
-                      : 'text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  <item.icon className="w-5 h-5" />
-                  <span>{item.name}</span>
-                </Link>
-              )}
-            </div>
-          ))}
-
-          <button
-            onClick={handleAuthAction}
-            className="flex items-center gap-3 px-4 py-2 w-full text-gray-700 hover:bg-gray-50 rounded-lg transition"
-          >
-            {user ? (
-              <>
-                <FiLogOut className="w-5 h-5" />
-                <span>Logout</span>
-              </>
+        <nav>
+          {menuItems.map(item => (
+            item.path ? (
+              <Link key={item.name} href={item.path} style={linkStyle(item.path)}>
+                <item.icon style={{ fontSize: '24px' }} />
+                <span>{item.name}</span>
+              </Link>
             ) : (
-              <>
-                <FiLogIn className="w-5 h-5" />
-                <span>Login</span>
-              </>
-            )}
-          </button>
+              <div key={item.name} style={linkStyle(null)}>
+                <item.icon style={{ fontSize: '24px' }} />
+                <span>{item.name}</span>
+              </div>
+            )
+          ))}
         </nav>
+      </div>
 
-        {user && (
-          <div className="mt-8 pt-4 border-t border-gray-200">
-            <div className="px-4 py-2">
-              <p className="text-sm font-medium text-gray-900 truncate">{user.email}</p>
-              <p className="text-xs text-gray-500">Subscription: {user.subscription}</p>
+      <div style={{ paddingBottom: '32px' }}>
+        {bottomItems.map(item => (
+          item.path ? (
+            <Link key={item.name} href={item.path} style={linkStyle(item.path)}>
+              <item.icon style={{ fontSize: '24px' }} />
+              <span>{item.name}</span>
+            </Link>
+          ) : (
+            <div key={item.name} style={linkStyle(null)}>
+              <item.icon style={{ fontSize: '24px' }} />
+              <span>{item.name}</span>
             </div>
+          )
+        ))}
+        <div onClick={handleAuthAction} style={{ ...linkStyle(null), cursor: 'pointer' }}>
+          {user ? <AiOutlineLogout style={{ fontSize: '24px' }} /> : <AiOutlineLogin style={{ fontSize: '24px' }} />}
+          <span>{user ? 'Logout' : 'Login'}</span>
+        </div>
+        {user && (
+          <div style={{ padding: '12px 28px', fontSize: '13px', color: '#6b757b' }}>
+            {user.email}
           </div>
         )}
       </div>
