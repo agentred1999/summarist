@@ -210,7 +210,7 @@ export default function Home() {
                   <div className="footer__link--wrapper"><a className="footer__link">Pricing</a></div>
                   <div className="footer__link--wrapper"><a className="footer__link">Summarist Business</a></div>
                   <div className="footer__link--wrapper"><a className="footer__link">Gift Cards</a></div>
-                  <div className="footer__link--wrapper"><a className="footer__link">Authors & Publishers</a></div>
+                  <div className="footer__link--wrapper"><a className="footer__link">Authors &amp; Publishers</a></div>
                 </div>
               </div>
               <div className="footer__block">

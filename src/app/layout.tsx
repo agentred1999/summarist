@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-import './globals.css';
 import './style.css';
 import ClientProvider from '@/components/ClientProvider';
 import ConditionalLayout from '@/components/layout/ConditionalLayout';
