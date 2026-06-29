@@ -41,13 +41,14 @@ export default function Sidebar() {
 
   if (pathname === '/' || pathname === '/choose-plan') return null;
 
-  const linkStyle = (path: string | null) => ({
+  const linkStyle = (path: string | null): React.CSSProperties => ({
     display: 'flex', alignItems: 'center', gap: '16px',
     padding: '12px 28px', fontSize: '16px', fontWeight: 300,
     color: pathname === path ? '#032b41' : '#6b757b',
     backgroundColor: pathname === path ? '#f1f6f4' : 'transparent',
     cursor: path ? 'pointer' : 'not-allowed',
-    textDecoration: 'none', borderLeft: pathname === path ? '4px solid #2bd97c' : '4px solid transparent',
+    textDecoration: 'none',
+    borderLeft: pathname === path ? '4px solid #2bd97c' : '4px solid transparent',
     transition: 'all 0.2s',
   });
 

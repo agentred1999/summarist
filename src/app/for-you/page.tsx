@@ -31,11 +31,8 @@ function BookPill({ required }: { required: boolean }) {
 function BookCard({ book }: { book: Book }) {
   return (
     <Link href={`/book/${book.id}`} style={{ textDecoration: 'none' }}>
-      <div style={{
-        display: 'flex', flexDirection: 'column', cursor: 'pointer',
-        padding: '16px', borderRadius: '8px', transition: 'background 0.2s',
-        position: 'relative', width: '180px'
-      }}
+      <div style={{ display: 'flex', flexDirection: 'column', cursor: 'pointer',
+        padding: '16px', borderRadius: '8px', position: 'relative', width: '180px' }}
         onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#f1f6f4')}
         onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
       >
@@ -53,17 +50,95 @@ function BookCard({ book }: { book: Book }) {
           {book.author}
         </div>
         <div style={{ fontSize: '13px', color: '#6b757b', marginBottom: '8px',
-          display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
-          overflow: 'hidden', maxWidth: '180px' }}>
+          overflow: 'hidden', maxWidth: '180px', height: '40px' }}>
           {book.subTitle}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#6b757b' }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <IoTimeOutline /> 4:52
-          </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <AiOutlineStar /> {book.averageRating?.toFixed(1) || '4.0'}
-          </span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><IoTimeOutline /> 4:52</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><AiOutlineStar /> {book.averageRating?.toFixed(1) || '4.0'}</span>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+export default function ForYouPage() {
+  const [selected, setSelected] = useState<Book | null>(null);
+  const [recommended, setRecommended] = useState<Book[]>([]);
+  const [suggested, setSuggested] = useState<Book[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    Promise.all([
+      fetch('https://us-central1-summaristt.cloudfunctions.net/getBooks?status=selected').then(r => r.json()),
+      fetch('https://us-central1-summaristt.cloudfunctions.net/getBooks?status=recommended').then(r => r.json()),
+      fetch('https://us-central1-summaristt.cloudfunctions.net/getBooks?status=suggested').then(r => r.json()),
+    ]).then(([sel, rec, sug]) => {
+      setSelected(Array.isArray(sel) ? sel[0] : sel);
+      const dedup = (arr: Book[]) => {
+        const seen = new Set();
+        return arr.filter(b => {
+          const key = b.title + b.author;
+          if (seen.has(key)) return false;
+cat > ~/projects/summarist/src/app/for-you/page.tsx << 'ENDOFFILE'
+'use client';
+
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { IoTimeOutline } from 'react-icons/io5';
+import { AiOutlineStar } from 'react-icons/ai';
+
+interface Book {
+  id: string;
+  title: string;
+  author: string;
+  subTitle: string;
+  imageLink: string;
+  averageRating: number;
+  subscriptionRequired: boolean;
+  type: string;
+}
+
+function BookPill({ required }: { required: boolean }) {
+  if (!required) return null;
+  return (
+    <div style={{
+      position: 'absolute', top: '8px', right: '8px',
+      backgroundColor: '#032b41', color: '#fff',
+      fontSize: '10px', fontWeight: 600, padding: '2px 8px',
+      borderRadius: '20px'
+    }}>Premium</div>
+  );
+}
+
+function BookCard({ book }: { book: Book }) {
+  return (
+    <Link href={`/book/${book.id}`} style={{ textDecoration: 'none' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', cursor: 'pointer',
+        padding: '16px', borderRadius: '8px', position: 'relative', width: '180px' }}
+        onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#f1f6f4')}
+        onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
+      >
+        <div style={{ position: 'relative', marginBottom: '12px' }}>
+          <img src={book.imageLink} alt={book.title}
+            style={{ width: '180px', height: '180px', objectFit: 'cover', borderRadius: '4px' }} />
+          <BookPill required={book.subscriptionRequired} />
+        </div>
+        <div style={{ fontSize: '16px', fontWeight: 700, color: '#032b41', marginBottom: '4px',
+          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '180px' }}>
+          {book.title}
+        </div>
+        <div style={{ fontSize: '14px', color: '#6b757b', marginBottom: '4px',
+          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '180px' }}>
+          {book.author}
+        </div>
+        <div style={{ fontSize: '13px', color: '#6b757b', marginBottom: '8px',
+          overflow: 'hidden', maxWidth: '180px', height: '40px' }}>
+          {book.subTitle}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#6b757b' }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><IoTimeOutline /> 4:52</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><AiOutlineStar /> {book.averageRating?.toFixed(1) || '4.0'}</span>
         </div>
       </div>
     </Link>
@@ -100,14 +175,12 @@ export default function ForYouPage() {
 
   return (
     <div style={{ padding: '24px 40px', maxWidth: '1100px' }}>
-
-      {/* Selected Book */}
       <section style={{ marginBottom: '40px' }}>
-        <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#032b41', marginBottom: '4px' }}>
+        <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#032b41', marginBottom: '16px' }}>
           Selected just for you
         </h2>
         {loading ? (
-          <div style={{ height: '200px', backgroundColor: '#e8e8e8', borderRadius: '8px', animation: 'pulse 1.5s infinite' }} />
+          <div style={{ height: '200px', backgroundColor: '#e8e8e8', borderRadius: '8px' }} />
         ) : selected ? (
           <Link href={`/book/${selected.id}`} style={{ textDecoration: 'none' }}>
             <div style={{
@@ -137,7 +210,6 @@ export default function ForYouPage() {
         ) : null}
       </section>
 
-      {/* Recommended */}
       <section style={{ marginBottom: '40px' }}>
         <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#032b41', marginBottom: '4px' }}>
           Recommended For You
@@ -145,9 +217,7 @@ export default function ForYouPage() {
         <p style={{ fontSize: '14px', color: '#6b757b', marginBottom: '16px' }}>We think you&apos;ll like these</p>
         {loading ? (
           <div style={{ display: 'flex', gap: '16px' }}>
-            {[1,2,3,4].map(i => (
-              <div key={i} style={{ width: '180px', height: '260px', backgroundColor: '#e8e8e8', borderRadius: '8px' }} />
-            ))}
+            {[1,2,3,4].map(i => <div key={i} style={{ width: '180px', height: '260px', backgroundColor: '#e8e8e8', borderRadius: '8px' }} />)}
           </div>
         ) : (
           <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px' }}>
@@ -156,7 +226,6 @@ export default function ForYouPage() {
         )}
       </section>
 
-      {/* Suggested */}
       <section style={{ marginBottom: '40px' }}>
         <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#032b41', marginBottom: '4px' }}>
           Suggested Books
@@ -164,9 +233,7 @@ export default function ForYouPage() {
         <p style={{ fontSize: '14px', color: '#6b757b', marginBottom: '16px' }}>Browse these books</p>
         {loading ? (
           <div style={{ display: 'flex', gap: '16px' }}>
-            {[1,2,3,4].map(i => (
-              <div key={i} style={{ width: '180px', height: '260px', backgroundColor: '#e8e8e8', borderRadius: '8px' }} />
-            ))}
+            {[1,2,3,4].map(i => <div key={i} style={{ width: '180px', height: '260px', backgroundColor: '#e8e8e8', borderRadius: '8px' }} />)}
           </div>
         ) : (
           <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px' }}>
