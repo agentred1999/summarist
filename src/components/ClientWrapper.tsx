@@ -1,7 +1,5 @@
 'use client';
-
 import { useEffect, useState } from 'react';
-import Sidebar from '@/components/layout/Sidebar';
 import AuthModal from '@/components/auth/AuthModal';
 
 export default function ClientWrapper({
@@ -17,12 +15,7 @@ export default function ClientWrapper({
 
   return (
     <>
-      <div className="flex min-h-screen">
-        <Sidebar />
-        <div className="flex-1">
-          {children}
-        </div>
-      </div>
+      {children}
       {mounted && <AuthModal />}
     </>
   );
