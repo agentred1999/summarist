@@ -44,14 +44,22 @@ export default function ForYouPage() {
     fetchBooks();
   }, [dispatch]);
 
-  // Remove duplicates by ID
-  const uniqueRecommended = recommendedBooks.filter((book, index, self) =>
-    index === self.findIndex((b) => b.id === book.id)
-  );
+  // Remove duplicates by title (since API returns duplicate IDs)
+  const seenTitles = new Set();
+  const uniqueRecommended = recommendedBooks.filter(book => {
+    const key = book.title + book.author;
+    if (seenTitles.has(key)) return false;
+    seenTitles.add(key);
+    return true;
+  });
 
-  const uniqueSuggested = suggestedBooks.filter((book, index, self) =>
-    index === self.findIndex((b) => b.id === book.id)
-  );
+  const seenTitlesSuggested = new Set();
+  const uniqueSuggested = suggestedBooks.filter(book => {
+    const key = book.title + book.author;
+    if (seenTitlesSuggested.has(key)) return false;
+    seenTitlesSuggested.add(key);
+    return true;
+  });
 
   if (loading) {
     return <div style={{ padding: '40px', textAlign: 'center' }}>Loading...</div>;
@@ -110,8 +118,8 @@ export default function ForYouPage() {
           <p style={{ color: '#6b757b', fontSize: '14px', marginBottom: '16px' }}>We think you'll like these</p>
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-            gap: '20px'
+            gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+            gap: '24px'
           }}>
             {uniqueRecommended.slice(0, 6).map((book) => (
               <Link key={book.id} href={`/book/${book.id}`} style={{ textDecoration: 'none' }}>
@@ -120,16 +128,19 @@ export default function ForYouPage() {
                   borderRadius: '12px',
                   border: '1px solid #e8e8e8',
                   overflow: 'hidden',
-                  transition: 'box-shadow 0.2s'
+                  transition: 'box-shadow 0.2s',
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column'
                 }}>
                   <img
                     src={book.imageLink}
                     alt={book.title}
-                    style={{ width: '100%', height: '160px', objectFit: 'cover' }}
+                    style={{ width: '100%', height: '200px', objectFit: 'cover' }}
                   />
-                  <div style={{ padding: '12px' }}>
+                  <div style={{ padding: '16px', flex: 1, display: 'flex', flexDirection: 'column' }}>
                     <h3 style={{
-                      fontSize: '14px',
+                      fontSize: '16px',
                       fontWeight: '600',
                       color: '#032b41',
                       marginBottom: '2px',
@@ -137,21 +148,24 @@ export default function ForYouPage() {
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap'
                     }}>{book.title}</h3>
-                    <p style={{ fontSize: '12px', color: '#6b757b', marginBottom: '4px' }}>{book.author}</p>
+                    <p style={{ fontSize: '14px', color: '#6b757b', marginBottom: '4px' }}>{book.author}</p>
                     <p style={{
-                      fontSize: '11px',
+                      fontSize: '13px',
                       color: '#6b757b',
-                      marginBottom: '6px',
+                      marginBottom: '8px',
+                      flex: 1,
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap'
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical'
                     }}>{book.subTitle}</p>
-                    <div style={{ display: 'flex', gap: '12px', fontSize: '12px', color: '#6b757b' }}>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                        <FiClock size={11} /> 4:52
+                    <div style={{ display: 'flex', gap: '12px', fontSize: '13px', color: '#6b757b', marginTop: 'auto' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <FiClock size={12} /> 4:52
                       </span>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                        <FiStar size={11} color="#f5a623" /> {book.averageRating?.toFixed(1) || '4.0'}
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <FiStar size={12} color="#f5a623" /> {book.averageRating?.toFixed(1) || '4.0'}
                       </span>
                     </div>
                   </div>
@@ -169,8 +183,8 @@ export default function ForYouPage() {
           <p style={{ color: '#6b757b', fontSize: '14px', marginBottom: '16px' }}>Browse these books</p>
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-            gap: '20px'
+            gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+            gap: '24px'
           }}>
             {uniqueSuggested.slice(0, 6).map((book) => (
               <Link key={book.id} href={`/book/${book.id}`} style={{ textDecoration: 'none' }}>
@@ -179,16 +193,19 @@ export default function ForYouPage() {
                   borderRadius: '12px',
                   border: '1px solid #e8e8e8',
                   overflow: 'hidden',
-                  transition: 'box-shadow 0.2s'
+                  transition: 'box-shadow 0.2s',
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column'
                 }}>
                   <img
                     src={book.imageLink}
                     alt={book.title}
-                    style={{ width: '100%', height: '160px', objectFit: 'cover' }}
+                    style={{ width: '100%', height: '200px', objectFit: 'cover' }}
                   />
-                  <div style={{ padding: '12px' }}>
+                  <div style={{ padding: '16px', flex: 1, display: 'flex', flexDirection: 'column' }}>
                     <h3 style={{
-                      fontSize: '14px',
+                      fontSize: '16px',
                       fontWeight: '600',
                       color: '#032b41',
                       marginBottom: '2px',
@@ -196,21 +213,24 @@ export default function ForYouPage() {
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap'
                     }}>{book.title}</h3>
-                    <p style={{ fontSize: '12px', color: '#6b757b', marginBottom: '4px' }}>{book.author}</p>
+                    <p style={{ fontSize: '14px', color: '#6b757b', marginBottom: '4px' }}>{book.author}</p>
                     <p style={{
-                      fontSize: '11px',
+                      fontSize: '13px',
                       color: '#6b757b',
-                      marginBottom: '6px',
+                      marginBottom: '8px',
+                      flex: 1,
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap'
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical'
                     }}>{book.subTitle}</p>
-                    <div style={{ display: 'flex', gap: '12px', fontSize: '12px', color: '#6b757b' }}>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                        <FiClock size={11} /> 4:52
+                    <div style={{ display: 'flex', gap: '12px', fontSize: '13px', color: '#6b757b', marginTop: 'auto' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <FiClock size={12} /> 4:52
                       </span>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                        <FiStar size={11} color="#f5a623" /> {book.averageRating?.toFixed(1) || '4.0'}
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <FiStar size={12} color="#f5a623" /> {book.averageRating?.toFixed(1) || '4.0'}
                       </span>
                     </div>
                   </div>
