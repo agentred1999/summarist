@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/store";
 import { IoTimeOutline } from "react-icons/io5";
 import { AiOutlineStar } from "react-icons/ai";
 
@@ -16,26 +18,22 @@ interface Book {
   type: string;
 }
 
-function BookPill({ required }: { required: boolean }) {
+function BookCard({ book, isPremiumUser }: { book: Book; isPremiumUser: boolean }) {
   return (
-    <div style={{ position: "absolute", top: "8px", right: "8px", backgroundColor: "#032b41", color: "#fff", fontSize: "10px", fontWeight: 600, padding: "2px 8px", borderRadius: "20px" }}>Premium</div>
-  );
-}
-
-function BookCard({ book }: { book: Book }) {
-  return (
-    <Link href={`/book/${book.id}`} style={{ textDecoration: "none" }}>
-      <div style={{ display: "flex", flexDirection: "column", cursor: "pointer", padding: "16px", borderRadius: "8px", position: "relative", width: "180px" }}
+    <Link href={`/book/${book.id}`} style={{ textDecoration: "none", flexShrink: 0 }}>
+      <div style={{ display: "flex", flexDirection: "column", cursor: "pointer", padding: "12px", borderRadius: "8px", position: "relative", width: "160px" }}
         onMouseEnter={e => (e.currentTarget.style.backgroundColor = "#f1f6f4")}
         onMouseLeave={e => (e.currentTarget.style.backgroundColor = "transparent")}>
         <div style={{ position: "relative", marginBottom: "12px" }}>
-          <img src={book.imageLink} alt={book.title} style={{ width: "180px", height: "180px", objectFit: "cover", borderRadius: "4px" }} />
-          <BookPill required={book.subscriptionRequired} />
+          <img src={book.imageLink} alt={book.title} style={{ width: "160px", height: "160px", objectFit: "cover", borderRadius: "4px" }} />
+          {book.subscriptionRequired && !isPremiumUser && (
+            <div style={{ position: "absolute", top: "8px", right: "8px", backgroundColor: "#032b41", color: "#fff", fontSize: "10px", fontWeight: 600, padding: "2px 8px", borderRadius: "20px" }}>Premium</div>
+          )}
         </div>
-        <div style={{ fontSize: "16px", fontWeight: 700, color: "#032b41", marginBottom: "4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "180px" }}>{book.title}</div>
-        <div style={{ fontSize: "14px", color: "#6b757b", marginBottom: "4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "180px" }}>{book.author}</div>
-        <div style={{ fontSize: "13px", color: "#6b757b", marginBottom: "8px", overflow: "hidden", maxWidth: "180px", height: "40px" }}>{book.subTitle}</div>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", color: "#6b757b" }}>
+        <div style={{ fontSize: "15px", fontWeight: 700, color: "#032b41", marginBottom: "4px", overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{book.title}</div>
+        <div style={{ fontSize: "13px", color: "#6b757b", marginBottom: "4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{book.author}</div>
+        <div style={{ fontSize: "12px", color: "#6b757b", marginBottom: "8px", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{book.subTitle}</div>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", color: "#6b757b" }}>
           <span style={{ display: "flex", alignItems: "center", gap: "4px" }}><IoTimeOutline /> 4:52</span>
           <span style={{ display: "flex", alignItems: "center", gap: "4px" }}><AiOutlineStar /> {book.averageRating?.toFixed(1) || "4.0"}</span>
         </div>
@@ -45,6 +43,8 @@ function BookCard({ book }: { book: Book }) {
 }
 
 export default function ForYouPage() {
+  const user = useSelector((state: RootState) => state.auth.user);
+  const isPremiumUser = user?.subscription === "premium" || user?.subscription === "premium-plus";
   const [selected, setSelected] = useState<Book | null>(null);
   const [recommended, setRecommended] = useState<Book[]>([]);
   const [suggested, setSuggested] = useState<Book[]>([]);
@@ -68,43 +68,62 @@ export default function ForYouPage() {
   }, []);
 
   return (
-    <div style={{ padding: "24px 40px", maxWidth: "1100px" }}>
-      <section style={{ marginBottom: "40px" }}>
-        <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#032b41", marginBottom: "16px" }}>Selected just for you</h2>
-        {loading ? <div style={{ height: "200px", backgroundColor: "#e8e8e8", borderRadius: "8px" }} /> : selected ? (
-          <Link href={`/book/${selected.id}`} style={{ textDecoration: "none" }}>
-            <div style={{ display: "flex", gap: "24px", backgroundColor: "#fff3d7", borderRadius: "8px", padding: "24px", cursor: "pointer", maxWidth: "700px" }}>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: "14px", color: "#032b41", marginBottom: "16px", lineHeight: 1.5 }}>{selected.subTitle}</div>
-                <hr style={{ border: "none", borderTop: "1px solid #bac8ce", marginBottom: "16px" }} />
-                <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                  <img src={selected.imageLink} alt={selected.title} style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "4px" }} />
-                  <div>
-                    <div style={{ fontSize: "16px", fontWeight: 700, color: "#032b41" }}>{selected.title}</div>
-                    <div style={{ fontSize: "14px", color: "#6b757b" }}>{selected.author}</div>
-                    <div style={{ display: "flex", gap: "12px", fontSize: "13px", color: "#6b757b", marginTop: "8px" }}>
-                      <span style={{ display: "flex", alignItems: "center", gap: "4px" }}><IoTimeOutline /> 4:52</span>
-                      <span style={{ display: "flex", alignItems: "center", gap: "4px" }}><AiOutlineStar /> {selected.averageRating?.toFixed(1)}</span>
+    <>
+      <style>{`
+        .for-you-wrap { padding: 24px 40px; max-width: 1100px; }
+        .selected-card { display: flex; gap: 24px; background: #fff3d7; border-radius: 8px; padding: 24px; cursor: pointer; max-width: 700px; }
+        .book-scroll { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; }
+        @media (max-width: 768px) {
+          .for-you-wrap { padding: 16px; }
+          .selected-card { flex-direction: column; gap: 16px; max-width: 100%; }
+        }
+      `}</style>
+      <div className="for-you-wrap">
+        <section style={{ marginBottom: "40px" }}>
+          <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#032b41", marginBottom: "16px" }}>Selected just for you</h2>
+          {loading ? (
+            <div style={{ height: "160px", backgroundColor: "#e8e8e8", borderRadius: "8px" }} />
+          ) : selected ? (
+            <Link href={`/book/${selected.id}`} style={{ textDecoration: "none" }}>
+              <div className="selected-card">
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: "14px", color: "#032b41", marginBottom: "16px", lineHeight: 1.5 }}>{selected.subTitle}</div>
+                  <hr style={{ border: "none", borderTop: "1px solid #bac8ce", marginBottom: "16px" }} />
+                  <div style={{ display: "flex", alignItems: "center", gap: "16px", flexWrap: "wrap" }}>
+                    <img src={selected.imageLink} alt={selected.title} style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "4px", flexShrink: 0 }} />
+                    <div>
+                      <div style={{ fontSize: "16px", fontWeight: 700, color: "#032b41" }}>{selected.title}</div>
+                      <div style={{ fontSize: "14px", color: "#6b757b" }}>{selected.author}</div>
+                      <div style={{ display: "flex", gap: "12px", fontSize: "13px", color: "#6b757b", marginTop: "8px" }}>
+                        <span style={{ display: "flex", alignItems: "center", gap: "4px" }}><IoTimeOutline /> 4:52</span>
+                        <span style={{ display: "flex", alignItems: "center", gap: "4px" }}><AiOutlineStar /> {selected.averageRating?.toFixed(1)}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </Link>
-        ) : null}
-      </section>
-      <section style={{ marginBottom: "40px" }}>
-        <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#032b41", marginBottom: "4px" }}>Recommended For You</h2>
-        <p style={{ fontSize: "14px", color: "#6b757b", marginBottom: "16px" }}>We think you will like these</p>
-        {loading ? <div style={{ display: "flex", gap: "16px" }}>{[1,2,3,4].map(i => <div key={i} style={{ width: "180px", height: "260px", backgroundColor: "#e8e8e8", borderRadius: "8px" }} />)}</div>
-        : <div style={{ display: "flex", gap: "8px", overflowX: "auto", paddingBottom: "8px" }}>{recommended.map(book => <BookCard key={book.id} book={book} />)}</div>}
-      </section>
-      <section style={{ marginBottom: "40px" }}>
-        <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#032b41", marginBottom: "4px" }}>Suggested Books</h2>
-        <p style={{ fontSize: "14px", color: "#6b757b", marginBottom: "16px" }}>Browse these books</p>
-        {loading ? <div style={{ display: "flex", gap: "16px" }}>{[1,2,3,4].map(i => <div key={i} style={{ width: "180px", height: "260px", backgroundColor: "#e8e8e8", borderRadius: "8px" }} />)}</div>
-        : <div style={{ display: "flex", gap: "8px", overflowX: "auto", paddingBottom: "8px" }}>{suggested.map(book => <BookCard key={book.id} book={book} />)}</div>}
-      </section>
-    </div>
+            </Link>
+          ) : null}
+        </section>
+
+        <section style={{ marginBottom: "40px" }}>
+          <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#032b41", marginBottom: "4px" }}>Recommended For You</h2>
+          <p style={{ fontSize: "14px", color: "#6b757b", marginBottom: "16px" }}>We think you will like these</p>
+          {loading
+            ? <div style={{ display: "flex", gap: "16px" }}>{[1,2,3,4].map(i => <div key={i} style={{ width: "160px", height: "240px", backgroundColor: "#e8e8e8", borderRadius: "8px", flexShrink: 0 }} />)}</div>
+            : <div className="book-scroll">{recommended.map(book => <BookCard key={book.id} book={book} isPremiumUser={isPremiumUser} />)}</div>
+          }
+        </section>
+
+        <section style={{ marginBottom: "40px" }}>
+          <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#032b41", marginBottom: "4px" }}>Suggested Books</h2>
+          <p style={{ fontSize: "14px", color: "#6b757b", marginBottom: "16px" }}>Browse these books</p>
+          {loading
+            ? <div style={{ display: "flex", gap: "16px" }}>{[1,2,3,4].map(i => <div key={i} style={{ width: "160px", height: "240px", backgroundColor: "#e8e8e8", borderRadius: "8px", flexShrink: 0 }} />)}</div>
+            : <div className="book-scroll">{suggested.map(book => <BookCard key={book.id} book={book} isPremiumUser={isPremiumUser} />)}</div>
+          }
+        </section>
+      </div>
+    </>
   );
 }
