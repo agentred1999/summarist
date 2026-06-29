@@ -17,7 +17,7 @@ function AuthListener({ children }: { children: React.ReactNode }) {
         dispatch(setUser({
           uid: user.uid,
           email: user.email,
-          displayName: user.displayName,
+          displayName: user.displayName || user.email?.split('@')[0] || 'User',
           subscription: 'basic',
           savedBooks: [],
           finishedBooks: [],
