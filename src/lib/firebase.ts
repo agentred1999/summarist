@@ -1,6 +1,7 @@
-import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, setPersistence, browserLocalPersistence } from 'firebase/auth';
+import { initializeApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+import { GoogleAuthProvider } from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -11,21 +12,9 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Initialize Firebase only once
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-
-// Set persistence to LOCAL
-setPersistence(auth, browserLocalPersistence).catch((error) => {
-  console.error('Auth persistence error:', error);
-});
-
 const db = getFirestore(app);
-
-// Google Provider
 const googleProvider = new GoogleAuthProvider();
-googleProvider.setCustomParameters({
-  prompt: 'select_account'
-});
 
-export { app, auth, db, googleProvider, signInWithPopup, signInWithRedirect };
+export { app, auth, db, googleProvider };
