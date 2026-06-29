@@ -1,6 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store/store';
 import { Book } from '@/types';
 import { FiClock, FiStar } from 'react-icons/fi';
 
@@ -10,7 +12,9 @@ interface BookCardProps {
 }
 
 export default function BookCard({ book, featured = false }: BookCardProps) {
-  // Format duration (you can calculate this from actual audio duration)
+  const user = useSelector((state: RootState) => state.auth.user);
+  const isPremiumUser = user?.subscription === 'premium' || user?.subscription === 'premium-plus';
+
   const formatDuration = (seconds?: number) => {
     if (!seconds) return '4:52';
     const mins = Math.floor(seconds / 60);
@@ -45,7 +49,7 @@ export default function BookCard({ book, featured = false }: BookCardProps) {
                   <FiStar className="w-4 h-4 text-yellow-400" /> {book.averageRating?.toFixed(1) || '4.0'}
                 </span>
               </div>
-              {book.subscriptionRequired && (
+              {book.subscriptionRequired && !isPremiumUser && (
                 <span className="mt-2 px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded-full w-fit">
                   Premium
                 </span>
@@ -80,7 +84,7 @@ export default function BookCard({ book, featured = false }: BookCardProps) {
               <FiStar className="w-3 h-3 text-yellow-400" /> {book.averageRating?.toFixed(1) || '4.0'}
             </span>
           </div>
-          {book.subscriptionRequired && (
+          {book.subscriptionRequired && !isPremiumUser && (
             <span className="mt-2 inline-block px-2 py-0.5 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded-full">
               Premium
             </span>
