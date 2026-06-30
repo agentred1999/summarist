@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import { IoTimeOutline } from "react-icons/io5";
 import { AiOutlineStar } from "react-icons/ai";
+import UpgradeHandler from "./upgrade-handler";
 
 interface Book {
   id: string;
@@ -88,6 +89,9 @@ export default function ForYouPage() {
 
   return (
     <>
+      <Suspense fallback={null}>
+        <UpgradeHandler />
+      </Suspense>
       <style>{`
         .for-you-wrap { padding: 24px 40px; max-width: 1200px; }
         .selected-card { display: flex; gap: 24px; background: #fff3d7; border-radius: 8px; padding: 24px; cursor: pointer; max-width: 700px; }
@@ -96,13 +100,12 @@ export default function ForYouPage() {
         .book-scroll::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 2px; }
         .book-scroll::-webkit-scrollbar-thumb { background: #bac8ce; border-radius: 2px; }
         @media (max-width: 768px) {
-          .for-you-wrap { padding: 56px 16px 16px; }
+          .for-you-wrap { padding: 64px 16px 16px !important; }
           .selected-card { flex-direction: column; gap: 16px; max-width: 100%; }
         }
       `}</style>
       <div className="for-you-wrap">
 
-        {/* Selected just for you */}
         <section style={{ marginBottom: "40px" }}>
           <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#032b41", marginBottom: "16px" }}>Selected just for you</h2>
           {loading ? (
@@ -130,7 +133,6 @@ export default function ForYouPage() {
           ) : null}
         </section>
 
-        {/* Recommended */}
         <section style={{ marginBottom: "40px" }}>
           <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#032b41", marginBottom: "4px" }}>Recommended For You</h2>
           <p style={{ fontSize: "14px", color: "#6b757b", marginBottom: "16px" }}>We think you will like these</p>
@@ -145,7 +147,6 @@ export default function ForYouPage() {
           )}
         </section>
 
-        {/* Suggested */}
         <section style={{ marginBottom: "40px" }}>
           <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#032b41", marginBottom: "4px" }}>Suggested Books</h2>
           <p style={{ fontSize: "14px", color: "#6b757b", marginBottom: "16px" }}>Browse these books</p>
