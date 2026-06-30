@@ -115,7 +115,7 @@ export default function Sidebar() {
           </Link>
           <Link href="/library" style={linkStyle('/library', pathname === '/library')}>
             <AiOutlineContainer style={{ fontSize: '24px' }} />
-            <span>Library</span>
+            <span>My Library</span>
           </Link>
           <div style={linkStyle(null)} title="Coming soon">
             <AiOutlineBulb style={{ fontSize: '24px' }} />

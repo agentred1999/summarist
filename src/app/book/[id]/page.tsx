@@ -89,15 +89,18 @@ export default function BookPage() {
     <>
       <style>{`
         .book-detail-wrap { max-width: 900px; margin: 0 auto; padding: 24px 16px; }
-        .book-top { display: flex; justify-content: space-between; gap: 32px; margin-bottom: 24px; flex-wrap: wrap-reverse; }
+        .book-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 32px; margin-bottom: 24px; flex-wrap: wrap-reverse; }
         .book-info { flex: 1; min-width: 260px; }
-        .book-cover { width: 180px; height: 252px; object-fit: cover; border-radius: 4px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); flex-shrink: 0; }
+        .book-cover-wrap { position: relative; width: 200px; height: 280px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+        .book-cover-shape { position: absolute; bottom: -16px; right: -16px; width: 75%; height: 75%; background: #e7c0b3; border-radius: 50% 0 0 0; z-index: 0; }
+        .book-cover { position: relative; z-index: 1; width: 180px; height: 252px; object-fit: cover; border-radius: 4px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); flex-shrink: 0; }
         .stat-row { display: flex; flex-wrap: wrap; gap: 24px; padding: 16px 0; border-top: 1px solid #e8e8e8; border-bottom: 1px solid #e8e8e8; margin: 16px 0 24px; }
         .stat-item { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #032b41; font-weight: 600; }
         .action-buttons { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
         .tag-pill { padding: 10px 18px; background: #f1f6f4; color: #032b41; font-size: 14px; font-weight: 600; border-radius: 4px; }
         @media (max-width: 640px) {
           .book-top { flex-direction: column-reverse; align-items: center; text-align: center; }
+          .book-cover-wrap { width: 180px; height: 252px; }
           .book-cover { width: 160px; height: 224px; }
           .stat-row { justify-content: center; }
           .action-buttons { justify-content: center; }
@@ -124,8 +127,8 @@ export default function BookPage() {
                 onClick={() => goToContent('read')}
                 style={{
                   display: 'flex', alignItems: 'center', gap: '8px',
-                  padding: '14px 28px', backgroundColor: '#032b41', color: '#fff',
-                  fontWeight: 600, fontSize: '15px', borderRadius: '4px', border: 'none', cursor: 'pointer'
+                  padding: '14px 28px', backgroundColor: '#fff', color: '#032b41',
+                  fontWeight: 600, fontSize: '15px', borderRadius: '4px', border: '1px solid #032b41', cursor: 'pointer'
                 }}
               >
                 <FiBookOpen /> Read
@@ -162,12 +165,15 @@ export default function BookPage() {
             )}
           </div>
 
-          <img
-            src={book.imageLink}
-            alt={book.title}
-            className="book-cover"
-            onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-book.png'; }}
-          />
+          <div className="book-cover-wrap">
+            <div className="book-cover-shape" />
+            <img
+              src={book.imageLink}
+              alt={book.title}
+              className="book-cover"
+              onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-book.png'; }}
+            />
+          </div>
         </div>
 
         {book.tags && book.tags.length > 0 && (
