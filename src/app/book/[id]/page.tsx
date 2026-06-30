@@ -6,7 +6,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/store/store';
 import { setAuthModal } from '@/store/slices/uiSlice';
 import { Book } from '@/types';
-import { FiPlay, FiBookOpen, FiPlus, FiClock, FiStar, FiMic } from 'react-icons/fi';
+import { FiPlay, FiPlus, FiClock, FiStar, FiHeadphones } from 'react-icons/fi';
 
 export default function BookPage() {
   const params = useParams();
@@ -29,7 +29,6 @@ export default function BookPage() {
         const data = await response.json();
         setBook(data);
 
-        // Get audio duration
         if (data.audioLink) {
           const audio = new Audio(data.audioLink);
           audio.addEventListener('loadedmetadata', () => {
@@ -69,125 +68,124 @@ export default function BookPage() {
 
   if (loading) {
     return (
-      <div className="animate-pulse space-y-4 max-w-4xl mx-auto p-8">
-        <div className="flex gap-8">
-          <div className="w-48 h-64 bg-gray-300 rounded flex-shrink-0"></div>
-          <div className="flex-1 space-y-4">
-            <div className="h-8 bg-gray-300 rounded w-2/3"></div>
-            <div className="h-4 bg-gray-300 rounded w-1/3"></div>
-            <div className="h-4 bg-gray-300 rounded w-1/2"></div>
-            <div className="h-4 bg-gray-300 rounded w-1/4"></div>
+      <div className="animate-pulse" style={{ maxWidth: '900px', margin: '0 auto', padding: '24px 16px' }}>
+        <div style={{ display: 'flex', gap: '32px', flexWrap: 'wrap' }}>
+          <div style={{ width: '200px', height: '280px', backgroundColor: '#e8e8e8', borderRadius: '8px', flexShrink: 0 }} />
+          <div style={{ flex: 1, minWidth: '240px' }}>
+            <div style={{ height: '32px', backgroundColor: '#e8e8e8', borderRadius: '4px', width: '70%', marginBottom: '12px' }} />
+            <div style={{ height: '18px', backgroundColor: '#e8e8e8', borderRadius: '4px', width: '40%', marginBottom: '24px' }} />
+            <div style={{ height: '14px', backgroundColor: '#e8e8e8', borderRadius: '4px', marginBottom: '8px' }} />
+            <div style={{ height: '14px', backgroundColor: '#e8e8e8', borderRadius: '4px', width: '80%' }} />
           </div>
         </div>
       </div>
     );
   }
 
-  if (!book) return <div className="p-8">Book not found</div>;
+  if (!book) return <div style={{ padding: '40px', textAlign: 'center', color: '#6b757b' }}>Book not found</div>;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      {/* Top section: image + info */}
-      <div className="flex flex-col md:flex-row gap-8 mb-8">
-        <img
-          src={book.imageLink}
-          alt={book.title}
-          className="w-48 h-64 object-cover rounded-lg shadow-md flex-shrink-0 mx-auto md:mx-0"
-          onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-book.png'; }}
-        />
-        <div className="flex-1">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{book.title}</h1>
-          <p className="text-lg text-gray-600 mt-1">by {book.author}</p>
-          <p className="text-gray-500 mt-2 italic">{book.subTitle}</p>
+    <>
+      <style>{`
+        .book-detail-wrap { max-width: 900px; margin: 0 auto; padding: 24px 16px; }
+        .book-top { display: flex; gap: 32px; margin-bottom: 32px; flex-wrap: wrap; }
+        .book-cover { width: 200px; height: 280px; object-fit: cover; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.1); flex-shrink: 0; }
+        .book-actions { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
+        @media (max-width: 640px) {
+          .book-top { flex-direction: column; align-items: center; text-align: center; }
+          .book-cover { width: 160px; height: 224px; }
+          .book-actions { justify-content: center; }
+        }
+      `}</style>
+      <div className="book-detail-wrap">
+        <div className="book-top">
+          <img
+            src={book.imageLink}
+            alt={book.title}
+            className="book-cover"
+            onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-book.png'; }}
+          />
+          <div style={{ flex: 1, minWidth: '240px' }}>
+            <h1 style={{ fontSize: '26px', fontWeight: 700, color: '#032b41', lineHeight: 1.3 }}>{book.title}</h1>
+            <p style={{ fontSize: '16px', color: '#6b757b', marginTop: '4px' }}>by {book.author}</p>
+            <p style={{ fontSize: '14px', color: '#6b757b', marginTop: '8px', fontStyle: 'italic' }}>{book.subTitle}</p>
 
-          {/* Stats row */}
-          <div className="flex flex-wrap items-center gap-4 mt-4 text-sm text-gray-600">
-            <span className="flex items-center gap-1">
-              <FiStar className="text-yellow-400" />
-              {book.averageRating?.toFixed(1) || '4.0'} ({book.totalRating || 0} ratings)
-            </span>
-            {audioDuration && (
-              <span className="flex items-center gap-1">
-                <FiClock /> {audioDuration}
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '16px', marginTop: '16px', fontSize: '14px', color: '#394547' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <FiStar color="#f6b400" /> {book.averageRating?.toFixed(1) || '4.0'} ({book.totalRating || 0})
               </span>
-            )}
-            <span className="flex items-center gap-1">
-              <FiMic /> Audio & Text
-            </span>
+              {audioDuration && (
+                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <FiClock /> {audioDuration}
+                </span>
+              )}
+              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <FiHeadphones /> Audio &amp; Text
+              </span>
+              {book.subscriptionRequired && !isPremiumUser && (
+                <span style={{ padding: '2px 10px', backgroundColor: '#032b41', color: '#fff', fontSize: '11px', fontWeight: 600, borderRadius: '20px' }}>
+                  Premium
+                </span>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '16px' }}>
+              {book.tags?.map((tag) => (
+                <span key={tag} style={{ padding: '4px 12px', backgroundColor: '#f1f6f4', color: '#394547', fontSize: '13px', borderRadius: '20px' }}>
+                  {tag}
+                </span>
+              ))}
+            </div>
+
+            <div className="book-actions">
+              <button
+                onClick={handleReadOrListen}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '8px',
+                  padding: '12px 28px', backgroundColor: '#2bd97c', color: '#032b41',
+                  fontWeight: 600, fontSize: '15px', borderRadius: '8px', border: 'none', cursor: 'pointer'
+                }}
+              >
+                <FiPlay /> {book.type === 'audio' ? 'Listen' : 'Read'}
+              </button>
+              <button
+                onClick={handleSaveToLibrary}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '8px',
+                  padding: '12px 28px', backgroundColor: '#fff', color: '#032b41',
+                  fontWeight: 600, fontSize: '15px', borderRadius: '8px', border: '1px solid #d1d5db', cursor: 'pointer'
+                }}
+              >
+                <FiPlus /> Add to Library
+              </button>
+            </div>
+
             {book.subscriptionRequired && !isPremiumUser && (
-              <span className="px-2 py-0.5 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded-full">
-                Premium
-              </span>
-            )}
-          </div>
-
-          {/* Tags */}
-          <div className="flex flex-wrap gap-2 mt-4">
-            {book.tags?.map((tag) => (
-              <span key={tag} className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full">
-                {tag}
-              </span>
-            ))}
-          </div>
-
-          {/* Action buttons */}
-          <div className="flex flex-wrap gap-3 mt-6">
-            <button
-              onClick={handleReadOrListen}
-              className="flex items-center gap-2 px-6 py-3 bg-[#2bd97c] text-[#032b41] font-semibold rounded-lg hover:bg-[#20c56e] transition"
-            >
-              <FiPlay />
-              {book.type === 'audio' ? 'Listen' : 'Read'}
-            </button>
-            <button
-              onClick={handleSaveToLibrary}
-              className="flex items-center gap-2 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition text-gray-700"
-            >
-              <FiPlus />
-              Add to Library
-            </button>
-          </div>
-
-          {book.subscriptionRequired && !isPremiumUser && (
-            <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <p className="text-yellow-800 text-sm">This book requires a Premium subscription.{' '}
-                <span className="underline cursor-pointer font-semibold" onClick={() => router.push('/choose-plan')}>
+              <div style={{ marginTop: '20px', padding: '12px 16px', backgroundColor: '#fff8e6', border: '1px solid #ffe9b3', borderRadius: '8px', fontSize: '14px', color: '#7a5a00' }}>
+                This book requires a Premium subscription.{' '}
+                <span
+                  onClick={() => router.push('/choose-plan')}
+                  style={{ textDecoration: 'underline', cursor: 'pointer', fontWeight: 600 }}
+                >
                   Upgrade now
                 </span>
-              </p>
-            </div>
-          )}
+              </div>
+            )}
+          </div>
         </div>
+
+        <div style={{ marginBottom: '32px' }}>
+          <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#032b41', marginBottom: '12px' }}>About the Book</h2>
+          <p style={{ color: '#394547', lineHeight: 1.7, fontSize: '15px' }}>{book.bookDescription}</p>
+        </div>
+
+        {book.authorDescription && (
+          <div style={{ padding: '24px', backgroundColor: '#f9fafb', borderRadius: '12px', border: '1px solid #eee' }}>
+            <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#032b41', marginBottom: '12px' }}>About the Author</h2>
+            <p style={{ color: '#394547', lineHeight: 1.7, fontSize: '15px' }}>{book.authorDescription}</p>
+          </div>
+        )}
       </div>
-
-      {/* Audio section */}
-      {book.audioLink && (
-        <div className="mb-8 p-6 bg-[#f1f6f4] rounded-xl">
-          <h2 className="text-lg font-bold text-[#032b41] mb-2 flex items-center gap-2">
-            <FiMic /> Audio Preview
-          </h2>
-          <p className="text-sm text-gray-600 mb-4">
-            {audioDuration ? `Runtime: ${audioDuration}` : 'Loading duration...'}
-          </p>
-          <audio controls className="w-full" src={book.audioLink}>
-            Your browser does not support the audio element.
-          </audio>
-        </div>
-      )}
-
-      {/* Description */}
-      <div className="mb-8">
-        <h2 className="text-xl font-bold text-[#032b41] mb-3">About the Book</h2>
-        <p className="text-gray-700 leading-relaxed">{book.bookDescription}</p>
-      </div>
-
-      {/* Author */}
-      {book.authorDescription && (
-        <div className="p-6 bg-white border border-gray-200 rounded-xl">
-          <h2 className="text-xl font-bold text-[#032b41] mb-3">About the Author</h2>
-          <p className="text-gray-700 leading-relaxed">{book.authorDescription}</p>
-        </div>
-      )}
-    </div>
+    </>
   );
 }

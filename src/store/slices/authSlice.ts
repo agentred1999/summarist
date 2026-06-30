@@ -3,7 +3,7 @@ import { User, AuthState } from '@/types';
 
 const initialState: AuthState = {
   user: null,
-  loading: false,
+  loading: true,
   error: null,
 };
 

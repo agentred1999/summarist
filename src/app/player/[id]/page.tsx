@@ -13,20 +13,26 @@ export default function PlayerPage() {
   const router = useRouter();
   const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.auth.user);
+  const authLoading = useSelector((state: RootState) => state.auth.loading);
   const [book, setBook] = useState<Book | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [bookLoading, setBookLoading] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
   const id = params.id as string;
 
+  // Wait for auth to resolve before deciding to redirect
   useEffect(() => {
+    if (authLoading) return; // auth state not confirmed yet, wait
     if (!user) {
       dispatch(setAuthModal(true));
       router.push('/for-you');
-      return;
     }
+  }, [user, authLoading]);
+
+  // Fetch book independently of auth redirect logic
+  useEffect(() => {
     const fetchBook = async () => {
       try {
         const res = await fetch(`https://us-central1-summaristt.cloudfunctions.net/getBook?id=${id}`);
@@ -35,11 +41,11 @@ export default function PlayerPage() {
       } catch (err) {
         console.error(err);
       } finally {
-        setLoading(false);
+        setBookLoading(false);
       }
     };
     fetchBook();
-  }, [id, user]);
+  }, [id]);
 
   const togglePlay = () => {
     if (!audioRef.current) return;
@@ -77,15 +83,18 @@ export default function PlayerPage() {
     return `${m}:${s}`;
   };
 
-  if (loading) return <div style={{ padding: '40px', color: '#032b41' }}>Loading...</div>;
+  // Show loading while either auth or book data is resolving
+  if (authLoading || bookLoading) {
+    return <div style={{ padding: '40px', color: '#032b41' }}>Loading...</div>;
+  }
+  if (!user) return null; // redirect effect will handle navigation
   if (!book) return <div style={{ padding: '40px', color: '#032b41' }}>Book not found.</div>;
 
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+    <div style={{ maxWidth: '800px', margin: '0 auto', padding: '0 16px' }}>
       <h1 style={{ fontSize: '24px', fontWeight: 700, color: '#032b41', marginBottom: '8px' }}>{book.title}</h1>
       <p style={{ color: '#6b757b', marginBottom: '32px' }}>by {book.author}</p>
 
-      {/* Summary text */}
       <div style={{
         backgroundColor: '#f1f6f4', borderRadius: '8px', padding: '24px',
         marginBottom: '32px', lineHeight: '1.8', color: '#394547', fontSize: '16px',
@@ -94,7 +103,6 @@ export default function PlayerPage() {
         {book.summary || 'No summary available for this book.'}
       </div>
 
-      {/* Audio player */}
       {book.audioLink && (
         <div style={{
           backgroundColor: '#032b41', borderRadius: '12px', padding: '24px',
@@ -107,7 +115,6 @@ export default function PlayerPage() {
             onLoadedMetadata={handleLoadedMetadata}
             onEnded={() => setIsPlaying(false)}
           />
-
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
             <span style={{ fontSize: '13px', minWidth: '40px' }}>{formatTime(currentTime)}</span>
             <input
@@ -120,7 +127,6 @@ export default function PlayerPage() {
             />
             <span style={{ fontSize: '13px', minWidth: '40px', textAlign: 'right' }}>{formatTime(duration)}</span>
           </div>
-
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '24px' }}>
             <button onClick={() => skip(-10)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }}>
               <FiSkipBack size={28} />
